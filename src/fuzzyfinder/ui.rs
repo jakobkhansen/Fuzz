@@ -78,7 +78,6 @@ impl Picker {
                 self.finished = true;
                 clear();
                 endwin();
-                self.render();
             }
             KEY_UP => {
                 let height = min(ELEMS_TO_DISPLAY as usize, self.picks.len());
@@ -91,6 +90,21 @@ impl Picker {
                 }
                 self.render();
             }
+            // Alt
+            27 => match getch() {
+                106 => {
+                    if self.selection > 0 {
+                        self.selection -= 1;
+                    }
+                    self.render();
+                }
+                107 => {
+                    let height = min(ELEMS_TO_DISPLAY as usize, self.picks.len());
+                    self.selection = min(height, self.selection + 1);
+                    self.render();
+                }
+                _ => {}
+            },
             other => {
                 addstr(format!("{}", other).as_str());
                 let char = other as u8;
