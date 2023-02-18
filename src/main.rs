@@ -1,13 +1,12 @@
 use std::io::stdin;
 
 use fuzz::fuzzyfinder::ui::Picker;
-use ncurses::endwin;
 
 fn main() {
     let mut picks: Vec<String> = vec![];
 
     for line in stdin().lines() {
-        let line = line.expect("Error reading stdin");
+        let line = line.expect("Error reading stdin").trim().to_string();
         picks.push(line);
     }
 
@@ -17,7 +16,6 @@ fn main() {
     while !picker.finished() {
         picker.read_char();
     }
-    endwin();
 
     println!("{}", picker.get_selection());
 }
