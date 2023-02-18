@@ -1,24 +1,37 @@
-use nix::libc::dup2;
-use pancurses::{cbreak, echo, half_delay, initscr, noecho, Input, Window};
-use std::{cmp::min, fs::File, os::unix::prelude::FromRawFd};
+use std::{cmp::min, ffi::CString};
+
+use ncurses::{endwin, getch, stdscr, KEY_BACKSPACE, KEY_DOWN, KEY_ENTER, KEY_UP};
+
+use ncurses::{addstr, clear, keypad, newterm, noecho, refresh, set_term};
+
+const ELEMS_TO_DISPLAY: i32 = 20;
 
 pub struct Picker {
     picks: Vec<String>,
     input: String,
-    window: Window,
     finished: bool,
     selection: usize,
 }
 
 impl Picker {
     pub fn new(picks: Vec<String>) -> Picker {
-        unsafe { dup2(1, 0) };
-        let window = initscr();
+        let read = CString::new("r+").unwrap();
+        let stdin_str = CString::new("/dev/tty").unwrap();
+        let stderr_str = CString::new("/dev/tty").unwrap();
+        unsafe {
+            let stdin = libc::fopen(stdin_str.as_ptr(), read.as_ptr());
+            let stderr = libc::fopen(stderr_str.as_ptr(), read.as_ptr());
+            let window_ptr = newterm(None, stdin, stderr);
+            set_term(window_ptr);
+            keypad(stdscr(), true);
+        };
+        refresh();
+
         noecho();
+
         return Picker {
             picks,
             input: String::new(),
-            window,
             finished: false,
             selection: 0,
         };
@@ -29,40 +42,53 @@ impl Picker {
     }
 
     pub fn render(&mut self) {
-        self.window.clear();
-        for i in 0..(min(10, self.picks.len())) {
+        clear();
+        let height = min(ELEMS_TO_DISPLAY as usize, self.picks.len());
+        for i in 0..height {
             let pick = self.picks.get(i).expect("wtf");
-            self.window.printw(" ");
-            self.window.printw(pick);
-            self.window.printw("\n");
+            if self.selection == (height - i - 1) {
+                addstr("> ");
+            } else {
+                addstr("  ");
+            }
+            addstr(pick);
+            addstr("\n");
         }
-        self.window.printw("\n > ");
-        self.window.printw(&self.input);
-        self.window.refresh();
+        addstr("\n> ");
+        addstr(&self.input);
+        refresh();
     }
 
     pub fn read_char(&mut self) {
-        match self.window.getch() {
-            Some(Input::Character(x)) => {
-                match x {
-                    '\u{7f}' => {
-                        self.input.pop();
-                        self.render();
-                    }
-                    '\n' => {
-                        self.window.printw("enter");
-                        self.finished = true;
-                        self.render();
-                    }
-                    _ => {
-                        self.input.push(x);
-                        self.render();
-                    }
-                };
+        match getch() {
+            KEY_BACKSPACE | 127 => {
+                self.input.pop();
+                self.render();
             }
-            None => {}
-            _ => {}
-        }
+            KEY_ENTER | 13 | 10 => {
+                self.finished = true;
+                clear();
+                endwin();
+                self.render();
+            }
+            KEY_UP => {
+                let height = min(ELEMS_TO_DISPLAY as usize, self.picks.len());
+                self.selection = min(height, self.selection + 1);
+                self.render();
+            }
+            KEY_DOWN => {
+                if self.selection > 0 {
+                    self.selection -= 1;
+                }
+                self.render();
+            }
+            other => {
+                addstr(format!("{}", other).as_str());
+                let char = other as u8;
+                self.input.push(char as char);
+                self.render();
+            }
+        };
     }
 
     pub fn finished(&self) -> bool {
@@ -70,9 +96,10 @@ impl Picker {
     }
 
     pub fn get_selection(&self) -> &String {
+        let height = min(ELEMS_TO_DISPLAY as usize, self.picks.len());
         return self
             .picks
-            .get(self.picks.len() - self.selection)
+            .get(height - self.selection - 1)
             .expect("Invalid selection");
     }
 }
