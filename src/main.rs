@@ -1,7 +1,7 @@
 use std::io::{self, stdin, BufRead};
 
+use fuzz::fuzzyfinder::ui::Picker;
 use pancurses::endwin;
-use Fuzz::fuzzyfinder::ui::Picker;
 
 fn main() {
     let mut picks: Vec<String> = vec![];
@@ -17,6 +17,5 @@ fn main() {
     while !picker.finished() {
         picker.read_char();
     }
-    picker.read_char();
     endwin();
 }

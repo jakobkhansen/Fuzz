@@ -7,17 +7,20 @@ pub struct Picker {
     input: String,
     window: Window,
     finished: bool,
+    selection: usize,
 }
 
 impl Picker {
     pub fn new(picks: Vec<String>) -> Picker {
         unsafe { dup2(1, 0) };
         let window = initscr();
+        noecho();
         return Picker {
-            picks: picks,
-            input: String::from("hello"),
+            picks,
+            input: String::new(),
             window,
             finished: false,
+            selection: 0,
         };
     }
 
@@ -29,10 +32,11 @@ impl Picker {
         self.window.clear();
         for i in 0..(min(10, self.picks.len())) {
             let pick = self.picks.get(i).expect("wtf");
+            self.window.printw(" ");
             self.window.printw(pick);
             self.window.printw("\n");
         }
-        self.window.printw("\n");
+        self.window.printw("\n > ");
         self.window.printw(&self.input);
         self.window.refresh();
     }
@@ -43,6 +47,11 @@ impl Picker {
                 match x {
                     '\u{7f}' => {
                         self.input.pop();
+                        self.render();
+                    }
+                    '\n' => {
+                        self.window.printw("enter");
+                        self.finished = true;
                         self.render();
                     }
                     _ => {
@@ -58,5 +67,12 @@ impl Picker {
 
     pub fn finished(&self) -> bool {
         return self.finished;
+    }
+
+    pub fn get_selection(&self) -> &String {
+        return self
+            .picks
+            .get(self.picks.len() - self.selection)
+            .expect("Invalid selection");
     }
 }
