@@ -7,15 +7,23 @@ use super::ui::Picker;
 pub fn sort_by_score(picker: &mut Picker) {
     for pick in &mut picker.picks {
         pick.score = score(&picker.input, &pick.element);
-        eprintln!("New score for {} is {}", pick.element, pick.score);
     }
+
+    // TODO what the hell is this
     picker.picks.sort_by(|x, y| {
-        if x.score < y.score {
+        if x.score == y.score {
+            if x.element.len() <= y.element.len() {
+                return Ordering::Less;
+            } else {
+                return Ordering::Greater;
+            }
+        }
+        if x.score > y.score {
             Ordering::Less
         } else {
             Ordering::Greater
         }
-    })
+    });
 }
 
 pub fn score(input: &String, pick: &String) -> usize {

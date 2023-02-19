@@ -1,6 +1,8 @@
 use std::{cmp::min, ffi::CString};
 
-use ncurses::{endwin, getch, scrollok, stdscr, KEY_BACKSPACE, KEY_DOWN, KEY_ENTER, KEY_UP};
+use ncurses::{
+    endwin, getch, scrollok, stdscr, KEY_BACKSPACE, KEY_CTAB, KEY_DOWN, KEY_ENTER, KEY_UP,
+};
 
 use ncurses::{addstr, clear, keypad, newterm, noecho, refresh, set_term};
 
@@ -8,6 +10,7 @@ use super::algo::sort_by_score;
 
 const ELEMS_TO_DISPLAY: i32 = 30;
 
+#[derive(Debug)]
 pub struct Picker {
     pub picks: Vec<Pick>,
     pub input: String,
@@ -15,6 +18,7 @@ pub struct Picker {
     selection: usize,
 }
 
+#[derive(Debug)]
 pub struct Pick {
     pub element: String,
     pub score: usize,
@@ -51,10 +55,10 @@ impl Picker {
 
     pub fn render(&mut self) {
         sort_by_score(self);
-        clear();
+        // clear();
         let height = min(ELEMS_TO_DISPLAY as usize, self.picks.len());
         for i in 0..height {
-            let pick = self.picks.get(i).expect("wtf");
+            let pick = self.picks.get(height - i - 1).unwrap();
             if self.selection == (height - i - 1) {
                 addstr(format!("{} > ", pick.score).as_str());
             } else {
@@ -92,12 +96,14 @@ impl Picker {
             }
             // Alt
             27 => match getch() {
+                // j
                 106 => {
                     if self.selection > 0 {
                         self.selection -= 1;
                     }
                     self.render();
                 }
+                // k
                 107 => {
                     let height = min(ELEMS_TO_DISPLAY as usize, self.picks.len());
                     self.selection = min(height, self.selection + 1);
@@ -122,7 +128,7 @@ impl Picker {
         let height = min(ELEMS_TO_DISPLAY as usize, self.picks.len());
         return &self
             .picks
-            .get(height - self.selection - 1)
+            .get(self.selection)
             .expect("Invalid selection")
             .element;
     }
