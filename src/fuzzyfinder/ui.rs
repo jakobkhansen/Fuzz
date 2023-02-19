@@ -55,7 +55,7 @@ impl Picker {
 
     pub fn render(&mut self) {
         sort_by_score(self);
-        // clear();
+        clear();
         let height = min(ELEMS_TO_DISPLAY as usize, self.picks.len());
         for i in 0..height {
             let pick = self.picks.get(height - i - 1).unwrap();
