@@ -54,7 +54,6 @@ impl Picker {
     }
 
     pub fn render(&mut self) {
-        sort_by_score(self);
         clear();
         let height = min(ELEMS_TO_DISPLAY as usize, self.picks.len());
         for i in 0..height {
@@ -76,6 +75,7 @@ impl Picker {
         match getch() {
             KEY_BACKSPACE | 127 => {
                 self.input.pop();
+                sort_by_score(self);
                 self.render();
             }
             KEY_ENTER | 13 | 10 => {
@@ -115,6 +115,7 @@ impl Picker {
                 addstr(format!("{}", other).as_str());
                 let char = other as u8;
                 self.input.push(char as char);
+                sort_by_score(self);
                 self.render();
             }
         };
