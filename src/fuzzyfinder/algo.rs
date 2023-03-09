@@ -9,7 +9,6 @@ pub fn sort_by_score(picker: &mut Picker) {
         pick.score = score(&picker.input, &pick.element);
     }
 
-    // TODO what the hell is this
     picker.picks.sort_by(|x, y| {
         if x.score == y.score {
             if x.element.len() <= y.element.len() {

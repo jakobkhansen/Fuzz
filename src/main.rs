@@ -17,5 +17,9 @@ fn main() {
         picker.read_char();
     }
 
-    println!("{}", picker.get_selection());
+    match picker.get_selection().as_str() {
+        "" => {}
+        x => println!("{}", x),
+    }
+    // println!("{}", picker.get_selection());
 }

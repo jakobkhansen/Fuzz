@@ -1,2 +1,3 @@
 # Fuzz
-Fuzzy-finder written in Rust
+
+Fuzzy-finder (à la FZF) written in Rust
