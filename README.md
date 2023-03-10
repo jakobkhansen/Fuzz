@@ -2,6 +2,8 @@
 
 Fuzz is a fuzzy-finder (à la [FZF](https://github.com/junegunn/fzf)) written in Rust.
 
+![fuzz](https://user-images.githubusercontent.com/8071566/224407054-a567f132-16a2-465d-b033-8ae8f28ba3d5.gif)
+
 ## Installation
 
 ```bash
