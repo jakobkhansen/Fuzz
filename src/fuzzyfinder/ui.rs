@@ -1,10 +1,9 @@
 use std::{cmp::min, ffi::CString};
 
-use ncurses::ll::{attron, initscr, set_escdelay};
+use ncurses::ll::{attron, set_escdelay};
 use ncurses::{
-    addnstr, assume_default_colors, attroff, curs_set, endwin, getch, init_pair, mvaddstr,
-    mvwaddstr, nodelay, scrollok, start_color, stdscr, COLOR_BLUE, COLOR_CYAN, COLOR_PAIR,
-    COLOR_RED, COLOR_WHITE, KEY_BACKSPACE, KEY_CTAB, KEY_DOWN, KEY_ENTER, KEY_UP, LINES,
+    addnstr, attroff, curs_set, endwin, getch, init_pair, mvaddstr, nodelay, scrollok, start_color,
+    stdscr, COLOR_CYAN, COLOR_PAIR, KEY_BACKSPACE, KEY_DOWN, KEY_ENTER, KEY_UP, LINES,
 };
 
 use ncurses::{addstr, clear, keypad, newterm, noecho, refresh, set_term};
@@ -17,7 +16,6 @@ const CURSOR_PAIR: i16 = 1;
 
 #[derive(Debug)]
 pub struct Picker {
-    window_ptr: *mut i8,
     pub picks: Vec<Pick>,
     pub input: String,
     finished: bool,
@@ -60,7 +58,6 @@ impl Picker {
                 input: String::new(),
                 finished: false,
                 selection: 0,
-                window_ptr,
             };
 
             sort_by_score(&mut picker);
