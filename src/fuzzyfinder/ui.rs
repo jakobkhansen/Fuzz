@@ -2,9 +2,9 @@ use std::{cmp::min, ffi::CString};
 
 use ncurses::ll::{attron, initscr, set_escdelay};
 use ncurses::{
-    addnstr, assume_default_colors, attroff, endwin, getch, init_pair, mvaddstr, mvwaddstr,
-    nodelay, scrollok, start_color, stdscr, COLOR_BLUE, COLOR_CYAN, COLOR_PAIR, COLOR_RED,
-    COLOR_WHITE, KEY_BACKSPACE, KEY_CTAB, KEY_DOWN, KEY_ENTER, KEY_UP, LINES,
+    addnstr, assume_default_colors, attroff, curs_set, endwin, getch, init_pair, mvaddstr,
+    mvwaddstr, nodelay, scrollok, start_color, stdscr, COLOR_BLUE, COLOR_CYAN, COLOR_PAIR,
+    COLOR_RED, COLOR_WHITE, KEY_BACKSPACE, KEY_CTAB, KEY_DOWN, KEY_ENTER, KEY_UP, LINES,
 };
 
 use ncurses::{addstr, clear, keypad, newterm, noecho, refresh, set_term};
@@ -51,6 +51,7 @@ impl Picker {
             refresh();
             start_color();
             noecho();
+            curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
 
             init_pair(CURSOR_PAIR, COLOR_CYAN, 0);
 
@@ -77,6 +78,7 @@ impl Picker {
 
         mvaddstr(LINES() - 1, 0, "\n> ");
         addnstr(&self.input, LINES());
+
         for i in 0..height as usize {
             let index = i as i32;
             let pick = self.picks.get(i).unwrap();
@@ -84,15 +86,20 @@ impl Picker {
                 unsafe {
                     attron(COLOR_PAIR(CURSOR_PAIR));
                 };
-                mvaddstr((LINES()) - (index) - 2, 0, format!("> ").as_str());
+                mvaddstr(
+                    (LINES()) - (index) - 2,
+                    0,
+                    format!("> {}\n", pick.element).as_str(),
+                );
+                attroff(COLOR_PAIR(CURSOR_PAIR));
             } else {
-                mvaddstr((LINES()) - (index) - 2, 0, format!("  ").as_str());
+                mvaddstr(
+                    (LINES()) - (index) - 2,
+                    0,
+                    format!("  {}\n", pick.element).as_str(),
+                );
             }
-            addstr(pick.element.as_str());
-            attroff(COLOR_PAIR(CURSOR_PAIR));
-            addstr("\n");
         }
-        ncurses::curs_set(ncurses::CURSOR_VISIBILITY::CURSOR_INVISIBLE);
         refresh();
     }
 
