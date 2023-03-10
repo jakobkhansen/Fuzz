@@ -7,7 +7,7 @@ Fuzz is a fuzzy-finder (à la [FZF](https://github.com/junegunn/fzf)) written in
 ## Installation
 
 ```bash
-git clone https://github.com/jakobkhansen/Fuzz.git
+git clone git@github.com:jakobkhansen/Fuzz.git
 cd Fuzz
 cargo install --path .
 ```
