@@ -15,10 +15,16 @@ const ELEMS_TO_DISPLAY: i32 = i32::MAX;
 const CURSOR_PAIR: i16 = 1;
 
 #[derive(Debug)]
+pub enum PickerState {
+    RUNNING,
+    FINISHED,
+    ABORTED,
+}
+#[derive(Debug)]
 pub struct Picker {
     pub picks: Vec<Pick>,
     pub input: String,
-    finished: bool,
+    state: PickerState,
     selection: usize,
 }
 
@@ -56,7 +62,7 @@ impl Picker {
             let mut picker = Picker {
                 picks: picks.iter().map(|x| Pick::new(x.to_owned())).collect(),
                 input: String::new(),
-                finished: false,
+                state: PickerState::RUNNING,
                 selection: 0,
             };
 
@@ -111,7 +117,7 @@ impl Picker {
                 self.render();
             }
             KEY_ENTER | 13 | 10 => {
-                self.finished = true;
+                self.state = PickerState::FINISHED;
                 clear();
                 endwin();
             }
@@ -144,7 +150,7 @@ impl Picker {
                         self.render();
                     }
                     -1 => {
-                        self.finished = true;
+                        self.state = PickerState::ABORTED;
                         clear();
                         endwin();
                     }
@@ -165,13 +171,20 @@ impl Picker {
     }
 
     pub fn finished(&self) -> bool {
-        return self.finished;
+        match self.state {
+            PickerState::RUNNING => false,
+            PickerState::FINISHED => true,
+            PickerState::ABORTED => true,
+        }
     }
 
-    pub fn get_selection(&self) -> String {
-        match self.picks.get(self.selection) {
-            Some(pick) => pick.element.to_owned(),
-            None => "".to_string(),
+    pub fn get_selection(&self) -> Option<String> {
+        match self.state {
+            PickerState::ABORTED => None,
+            _ => match self.picks.get(self.selection) {
+                Some(pick) => Some(pick.element.to_owned()),
+                None => None,
+            },
         }
     }
 }
